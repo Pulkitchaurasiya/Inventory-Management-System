@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>InvenPro — Inventory Management System</title>
+  <link rel="stylesheet" href="style.css"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ===================== LOADING SCREEN ===================== -->
+<div id="loadingScreen" class="loading-screen">
+  <div class="loader-wrap">
+    <div class="loader-logo">
+      <i class="fa-solid fa-boxes-stacked"></i>
+      <span>InvenPro</span>
+    </div>
+    <div class="loader-bar"><div class="loader-fill"></div></div>
+    <p class="loader-text">Initializing system...</p>
+  </div>
+</div>
+
+<!-- ===================== LOGIN PAGE ===================== -->
+<div id="loginPage" class="page login-page hidden">
+  <div class="login-bg">
+    <div class="login-blob blob1"></div>
+    <div class="login-blob blob2"></div>
+    <div class="login-blob blob3"></div>
+  </div>
+  <div class="login-container">
+    <div class="login-brand">
+      <div class="brand-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+      <h1>InvenPro</h1>
+      <p>Inventory Management System</p>
+    </div>
+    <div class="login-card glass-card">
+      <h2>Welcome Back</h2>
+      <p class="login-subtitle">Sign in to your account</p>
+      <form id="loginForm" class="login-form" novalidate>
+        <div class="form-group">
+          <label><i class="fa-solid fa-user"></i> Username</label>
+          <input type="text" id="loginUsername" placeholder="Enter username" autocomplete="off"/>
+          <span class="field-error" id="usernameError"></span>
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-lock"></i> Password</label>
+          <div class="password-wrap">
+            <input type="password" id="loginPassword" placeholder="Enter password"/>
+            <button type="button" class="show-pass" id="togglePass">
+              <i class="fa-solid fa-eye" id="eyeIcon"></i>
+            </button>
+          </div>
+          <span class="field-error" id="passwordError"></span>
+        </div>
+        <div class="form-row remember-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="rememberMe"/> Remember me
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn-primary btn-login" id="loginBtn">
+          <span>Sign In</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+        </button>
+      </form>
+      <p class="login-hint"><i class="fa-solid fa-circle-info"></i> Demo: <strong>admin</strong> / <strong>admin123</strong></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MAIN APP ===================== -->
+<div id="appLayout" class="app-layout hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-mark">
+        <i class="fa-solid fa-boxes-stacked"></i>
+        <span class="brand-name">InvenPro</span>
+      </div>
+      <button class="sidebar-close" id="sidebarClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">
+        <span class="nav-label">MAIN</span>
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <i class="fa-solid fa-gauge-high"></i><span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-page="products">
+          <i class="fa-solid fa-box-open"></i><span>Products</span>
+        </a>
+        <a href="#" class="nav-item" data-page="inventory">
+          <i class="fa-solid fa-warehouse"></i><span>Inventory</span>
+        </a>
+        <a href="#" class="nav-item" data-page="sales">
+          <i class="fa-solid fa-chart-line"></i><span>Sales Report</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">ACCOUNT</span>
+        <a href="#" class="nav-item" data-page="profile">
+          <i class="fa-solid fa-circle-user"></i><span>Profile</span>
+        </a>
+        <a href="#" class="nav-item" data-page="settings">
+          <i class="fa-solid fa-sliders"></i><span>Settings</span>
+        </a>
+      </div>
+      <div class="nav-section">
+        <span class="nav-label">INFO</span>
+        <a href="#" class="nav-item" data-page="about">
+          <i class="fa-solid fa-circle-info"></i><span>About Project</span>
+        </a>
+        <a href="#" class="nav-item" data-page="contact">
+          <i class="fa-solid fa-envelope"></i><span>Contact</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-mini">
+        <div class="user-avatar-sm" id="sidebarAvatar">A</div>
+        <div class="user-mini-info">
+          <span id="sidebarUsername">Admin</span>
+          <span class="role-badge">Administrator</span>
+        </div>
+      </div>
+      <button class="logout-btn" id="logoutBtn" title="Logout">
+        <i class="fa-solid fa-right-from-bracket"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- SIDEBAR OVERLAY -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content" id="mainContent">
+
+    <!-- TOP NAVBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" id="menuToggle">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="search-wrap">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="globalSearch" placeholder="Search products, reports..."/>
+          <div class="search-results" id="searchResults"></div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" id="themeToggle" title="Toggle theme">
+          <i class="fa-solid fa-moon" id="themeIcon"></i>
+        </button>
+        <button class="topbar-btn notif-btn" id="notifBtn" title="Notifications">
+          <i class="fa-solid fa-bell"></i>
+          <span class="notif-badge" id="notifBadge">3</span>
+        </button>
+        <div class="notif-panel" id="notifPanel">
+          <div class="notif-header"><h4>Notifications</h4><button id="clearNotifs">Clear all</button></div>
+          <div class="notif-list" id="notifList"></div>
+        </div>
+        <div class="user-profile-wrap" id="userProfileWrap">
+          <div class="user-avatar" id="topbarAvatar">A</div>
+          <span class="user-name-top" id="topbarUsername">Admin</span>
+          <i class="fa-solid fa-chevron-down"></i>
+        </div>
+      </div>
+    </header>
+
+    <!-- PAGE AREA -->
+    <main class="page-area">
+
+      <!-- ===== DASHBOARD ===== -->
+      <section class="app-page active" id="page-dashboard">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-sub">Welcome back, <span id="dashGreetName">Admin</span>! Here's what's happening today.</p>
+          </div>
+          <div class="page-actions">
+            <span class="date-badge"><i class="fa-regular fa-calendar"></i> <span id="currentDate"></span></span>
+          </div>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="stats-grid">
+          <div class="stat-card card-blue" id="statTotalProducts">
+            <div class="stat-icon"><i class="fa-solid fa-box-open"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="totalProductsVal">0</span>
+              <span class="stat-label">Total Products</span>
+            </div>
+            <div class="stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 12%</div>
+          </div>
+          <div class="stat-card card-green" id="statTotalStock">
+            <div class="stat-icon"><i class="fa-solid fa-warehouse"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="totalStockVal">0</span>
+              <span class="stat-label">Total Stock Units</span>
+            </div>
+            <div class="stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 8%</div>
+          </div>
+          <div class="stat-card card-orange" id="statLowStock">
+            <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="lowStockVal">0</span>
+              <span class="stat-label">Low Stock Alerts</span>
+            </div>
+            <div class="stat-trend down"><i class="fa-solid fa-arrow-trend-down"></i> Alert</div>
+          </div>
+          <div class="stat-card card-purple" id="statTotalSales">
+            <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="totalSalesVal">₹0</span>
+              <span class="stat-label">Total Sales Value</span>
+            </div>
+            <div class="stat-trend up"><i class="fa-solid fa-arrow-trend-up"></i> 24%</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+          <div class="chart-card glass-card">
+            <div class="chart-header">
+              <h3>Sales Overview</h3>
+              <select class="chart-filter" id="salesChartFilter">
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+              </select>
+            </div>
+            <canvas id="salesChart" height="200"></canvas>
+          </div>
+          <div class="chart-card glass-card">
+            <div class="chart-header"><h3>Category Distribution</h3></div>
+            <canvas id="categoryChart" height="200"></canvas>
+          </div>
+        </div>
+
+        <!-- Bottom Row -->
+        <div class="dashboard-bottom">
+          <div class="recent-card glass-card">
+            <div class="card-header-row">
+              <h3>Recent Products</h3>
+              <button class="btn-sm" onclick="navigateTo('products')">View All</button>
+            </div>
+            <table class="mini-table">
+              <thead><tr><th>Product</th><th>Category</th><th>Stock</th><th>Price</th></tr></thead>
+              <tbody id="recentProductsTable"></tbody>
+            </table>
+          </div>
+          <div class="alerts-card glass-card">
+            <div class="card-header-row">
+              <h3>Low Stock Alerts</h3>
+              <span class="badge-red" id="alertCount">0</span>
+            </div>
+            <div class="alerts-list" id="lowStockList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PRODUCTS ===== -->
+      <section class="app-page" id="page-products">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Products</h1>
+            <p class="page-sub">Manage your product catalog</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn-primary" id="openAddProduct">
+              <i class="fa-solid fa-plus"></i> Add Product
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-bar glass-card">
+          <div class="search-field">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="productSearch" placeholder="Search products..."/>
+          </div>
+          <select id="categoryFilter" class="filter-select">
+            <option value="">All Categories</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Food">Food</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Stationery">Stationery</option>
+            <option value="Other">Other</option>
+          </select>
+          <select id="stockFilter" class="filter-select">
+            <option value="">All Stock</option>
+            <option value="low">Low Stock (&lt;10)</option>
+            <option value="out">Out of Stock</option>
+            <option value="ok">In Stock</option>
+          </select>
+          <button class="btn-outline" id="clearFilters"><i class="fa-solid fa-rotate-left"></i> Clear</button>
+        </div>
+
+        <!-- Products Table -->
+        <div class="table-card glass-card">
+          <div class="table-info-row">
+            <span id="productCount">0 products</span>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table" id="productsTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Stock</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ADD / EDIT PRODUCT MODAL ===== -->
+      <div class="modal-overlay" id="productModal">
+        <div class="modal glass-card">
+          <div class="modal-header">
+            <h3 id="modalTitle">Add New Product</h3>
+            <button class="modal-close" id="closeProductModal"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <form id="productForm" novalidate>
+            <input type="hidden" id="productId"/>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Product Name *</label>
+                <input type="text" id="prodName" placeholder="e.g. Laptop Pro 15"/>
+                <span class="field-error" id="prodNameErr"></span>
+              </div>
+              <div class="form-group">
+                <label>Category *</label>
+                <select id="prodCategory">
+                  <option value="">Select category</option>
+                  <option value="Electronics">Electronics</option>
+                  <option value="Clothing">Clothing</option>
+                  <option value="Food">Food</option>
+                  <option value="Furniture">Furniture</option>
+                  <option value="Stationery">Stationery</option>
+                  <option value="Other">Other</option>
+                </select>
+                <span class="field-error" id="prodCatErr"></span>
+              </div>
+              <div class="form-group">
+                <label>Stock Quantity *</label>
+                <input type="number" id="prodStock" placeholder="0" min="0"/>
+                <span class="field-error" id="prodStockErr"></span>
+              </div>
+              <div class="form-group">
+                <label>Price (₹) *</label>
+                <input type="number" id="prodPrice" placeholder="0.00" min="0" step="0.01"/>
+                <span class="field-error" id="prodPriceErr"></span>
+              </div>
+              <div class="form-group form-full">
+                <label>Description</label>
+                <textarea id="prodDesc" placeholder="Product description..." rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label>SKU / Code</label>
+                <input type="text" id="prodSku" placeholder="e.g. SKU-001"/>
+              </div>
+              <div class="form-group">
+                <label>Supplier</label>
+                <input type="text" id="prodSupplier" placeholder="Supplier name"/>
+              </div>
+              <div class="form-group">
+                <label>Image URL (optional)</label>
+                <input type="text" id="prodImage" placeholder="https://..."/>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn-outline" id="cancelProductModal">Cancel</button>
+              <button type="submit" class="btn-primary" id="saveProductBtn">
+                <i class="fa-solid fa-floppy-disk"></i> Save Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ===== INVENTORY ===== -->
+      <section class="app-page" id="page-inventory">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Inventory</h1>
+            <p class="page-sub">Track stock levels and movements</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn-primary" id="openStockModal">
+              <i class="fa-solid fa-arrow-right-arrow-left"></i> Stock In/Out
+            </button>
+          </div>
+        </div>
+
+        <!-- Inventory Summary Cards -->
+        <div class="inv-summary-grid">
+          <div class="inv-sum-card">
+            <i class="fa-solid fa-cubes-stacked"></i>
+            <div><span id="invTotalUnits">0</span><p>Total Units</p></div>
+          </div>
+          <div class="inv-sum-card warn">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <div><span id="invLowCount">0</span><p>Low Stock Items</p></div>
+          </div>
+          <div class="inv-sum-card danger">
+            <i class="fa-solid fa-ban"></i>
+            <div><span id="invOutCount">0</span><p>Out of Stock</p></div>
+          </div>
+          <div class="inv-sum-card success">
+            <i class="fa-solid fa-check-circle"></i>
+            <div><span id="invHealthyCount">0</span><p>Healthy Stock</p></div>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="table-card glass-card">
+          <div class="card-header-row">
+            <h3>Stock Overview</h3>
+            <div class="search-field small">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="invSearch" placeholder="Search..."/>
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU</th>
+                  <th>Category</th>
+                  <th>Current Stock</th>
+                  <th>Status</th>
+                  <th>Last Updated</th>
+                </tr>
+              </thead>
+              <tbody id="inventoryTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Movement Log -->
+        <div class="table-card glass-card" style="margin-top:1.5rem">
+          <div class="card-header-row">
+            <h3>Stock Movement Log</h3>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>Reason</th><th>By</th></tr>
+              </thead>
+              <tbody id="movementLogBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- STOCK MODAL -->
+      <div class="modal-overlay" id="stockModal">
+        <div class="modal glass-card">
+          <div class="modal-header">
+            <h3>Stock In / Stock Out</h3>
+            <button class="modal-close" id="closeStockModal"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="form-group">
+            <label>Select Product</label>
+            <select id="stockProductSelect"></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1">
+              <label>Type</label>
+              <select id="stockType">
+                <option value="in">Stock In ▲</option>
+                <option value="out">Stock Out ▼</option>
+              </select>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Quantity</label>
+              <input type="number" id="stockQty" placeholder="0" min="1"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Reason / Note</label>
+            <input type="text" id="stockReason" placeholder="e.g. Received from supplier"/>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-outline" id="cancelStockModal">Cancel</button>
+            <button class="btn-primary" id="saveStockBtn"><i class="fa-solid fa-check"></i> Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SALES REPORT ===== -->
+      <section class="app-page" id="page-sales">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">Sales Report</h1>
+            <p class="page-sub">Analyze sales data and inventory performance</p>
+          </div>
+          <div class="page-actions">
+            <button class="btn-primary" id="openSaleModal">
+              <i class="fa-solid fa-plus"></i> Record Sale
+            </button>
+          </div>
+        </div>
+
+        <!-- Sales Stats -->
+        <div class="stats-grid">
+          <div class="stat-card card-blue">
+            <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="salesTotalOrders">0</span>
+              <span class="stat-label">Total Orders</span>
+            </div>
+          </div>
+          <div class="stat-card card-green">
+            <div class="stat-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="salesTotalRevenue">₹0</span>
+              <span class="stat-label">Total Revenue</span>
+            </div>
+          </div>
+          <div class="stat-card card-purple">
+            <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="salesTopProduct">—</span>
+              <span class="stat-label">Top Product</span>
+            </div>
+          </div>
+          <div class="stat-card card-orange">
+            <div class="stat-icon"><i class="fa-solid fa-chart-bar"></i></div>
+            <div class="stat-info">
+              <span class="stat-value" id="salesAvgOrder">₹0</span>
+              <span class="stat-label">Avg. Order Value</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="charts-row">
+          <div class="chart-card glass-card" style="flex:2">
+            <div class="chart-header"><h3>Revenue Trend</h3></div>
+            <canvas id="revenueChart" height="180"></canvas>
+          </div>
+          <div class="chart-card glass-card" style="flex:1">
+            <div class="chart-header"><h3>Top Products</h3></div>
+            <canvas id="topProductsChart" height="180"></canvas>
+          </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar glass-card">
+          <div class="search-field">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="salesSearch" placeholder="Search sales..."/>
+          </div>
+          <select id="salesDateFilter" class="filter-select">
+            <option value="">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+          </select>
+          <button class="btn-outline" id="exportSalesBtn"><i class="fa-solid fa-download"></i> Export CSV</button>
+        </div>
+
+        <!-- Sales Table -->
+        <div class="table-card glass-card">
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr><th>#</th><th>Date</th><th>Product</th><th>Category</th><th>Qty Sold</th><th>Unit Price</th><th>Total</th></tr>
+              </thead>
+              <tbody id="salesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SALE RECORD MODAL -->
+      <div class="modal-overlay" id="saleModal">
+        <div class="modal glass-card">
+          <div class="modal-header">
+            <h3>Record New Sale</h3>
+            <button class="modal-close" id="closeSaleModal"><i class="fa-solid fa-xmark"></i></button>
+          </div>
+          <div class="form-group">
+            <label>Product</label>
+            <select id="saleProductSelect"></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1">
+              <label>Quantity Sold</label>
+              <input type="number" id="saleQty" min="1" placeholder="1"/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Sale Price (₹)</label>
+              <input type="number" id="salePrice" min="0" step="0.01" placeholder="0.00"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Customer Name (optional)</label>
+            <input type="text" id="saleCustomer" placeholder="Walk-in Customer"/>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-outline" id="cancelSaleModal">Cancel</button>
+            <button class="btn-primary" id="saveSaleBtn"><i class="fa-solid fa-check"></i> Record Sale</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== PROFILE ===== -->
+      <section class="app-page" id="page-profile">
+        <div class="page-header">
+          <h1 class="page-title">User Profile</h1>
+          <p class="page-sub">Manage your personal information</p>
+        </div>
+        <div class="profile-layout">
+          <div class="profile-left glass-card">
+            <div class="profile-avatar-wrap">
+              <div class="profile-avatar" id="profileAvatarDisplay">A</div>
+              <button class="avatar-edit-btn" id="changeAvatarBtn"><i class="fa-solid fa-camera"></i></button>
+            </div>
+            <h3 id="profileDisplayName">Admin User</h3>
+            <span class="role-chip">Administrator</span>
+            <div class="profile-stats">
+              <div><span id="profileProductCount">0</span><p>Products</p></div>
+              <div><span id="profileSalesCount">0</span><p>Sales</p></div>
+            </div>
+          </div>
+          <div class="profile-right glass-card">
+            <div class="tabs">
+              <button class="tab active" data-tab="personal">Personal Info</button>
+              <button class="tab" data-tab="security">Security</button>
+            </div>
+            <div class="tab-pane active" id="tab-personal">
+              <form id="profileForm">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="profileName" value="Admin User"/>
+                  </div>
+                  <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="profileUsername" value="admin"/>
+                  </div>
+                  <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" value="admin@invenpro.com"/>
+                  </div>
+                  <div class="form-group">
+                    <label>Phone</label>
+                    <input type="text" id="profilePhone" placeholder="+91 9876543210"/>
+                  </div>
+                  <div class="form-group form-full">
+                    <label>Bio</label>
+                    <textarea id="profileBio" rows="3" placeholder="Tell us about yourself..."></textarea>
+                  </div>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+              </form>
+            </div>
+            <div class="tab-pane" id="tab-security">
+              <form id="securityForm">
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="currentPass" placeholder="••••••••"/>
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="newPass" placeholder="••••••••"/>
+                </div>
+                <div class="form-group">
+                  <label>Confirm Password</label>
+                  <input type="password" id="confirmPass" placeholder="••••••••"/>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fa-solid fa-shield-halved"></i> Update Password</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== SETTINGS ===== -->
+      <section class="app-page" id="page-settings">
+        <div class="page-header">
+          <h1 class="page-title">Settings</h1>
+          <p class="page-sub">Customize your experience</p>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card glass-card">
+            <h3><i class="fa-solid fa-palette"></i> Appearance</h3>
+            <div class="setting-row">
+              <div><strong>Dark Mode</strong><p>Switch between light and dark theme</p></div>
+              <label class="toggle"><input type="checkbox" id="settingDarkMode"/><span class="slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <div><strong>Compact View</strong><p>Reduce spacing for more content</p></div>
+              <label class="toggle"><input type="checkbox" id="settingCompact"/><span class="slider"></span></label>
+            </div>
+          </div>
+          <div class="settings-card glass-card">
+            <h3><i class="fa-solid fa-bell"></i> Notifications</h3>
+            <div class="setting-row">
+              <div><strong>Low Stock Alerts</strong><p>Get notified when stock is low</p></div>
+              <label class="toggle"><input type="checkbox" id="settingLowStock" checked/><span class="slider"></span></label>
+            </div>
+            <div class="setting-row">
+              <div><strong>Sales Alerts</strong><p>Get notified on new sales</p></div>
+              <label class="toggle"><input type="checkbox" id="settingSales" checked/><span class="slider"></span></label>
+            </div>
+          </div>
+          <div class="settings-card glass-card">
+            <h3><i class="fa-solid fa-database"></i> Data Management</h3>
+            <div class="settings-btns">
+              <button class="btn-outline" id="exportDataBtn"><i class="fa-solid fa-download"></i> Export Data</button>
+              <button class="btn-danger" id="clearDataBtn"><i class="fa-solid fa-trash"></i> Clear All Data</button>
+            </div>
+          </div>
+          <div class="settings-card glass-card">
+            <h3><i class="fa-solid fa-shield-halved"></i> Low Stock Threshold</h3>
+            <div class="setting-row">
+              <div><strong>Alert when stock &lt;</strong></div>
+              <input type="number" id="lowStockThreshold" value="10" min="1" max="100" class="small-input"/>
+            </div>
+            <button class="btn-primary" id="saveSettingsBtn"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== ABOUT ===== -->
+      <section class="app-page" id="page-about">
+        <div class="page-header">
+          <h1 class="page-title">About Project</h1>
+          <p class="page-sub">Final Year Project — Inventory Management System</p>
+        </div>
+
+        <!-- Hero -->
+        <div class="about-hero glass-card">
+          <div class="about-hero-icon"><i class="fa-solid fa-boxes-stacked"></i></div>
+          <div>
+            <h2>InvenPro — Inventory Management System</h2>
+            <p>A comprehensive, full-featured inventory management web application built as a Final Year College Project. Designed to simulate real-world business software used by small and medium enterprises.</p>
+            <div class="tech-badges">
+              <span class="tech-badge"><i class="fa-brands fa-html5"></i> HTML5</span>
+              <span class="tech-badge"><i class="fa-brands fa-css3-alt"></i> CSS3</span>
+              <span class="tech-badge"><i class="fa-brands fa-js"></i> JavaScript</span>
+              <span class="tech-badge"><i class="fa-solid fa-chart-pie"></i> Chart.js</span>
+              <span class="tech-badge"><i class="fa-brands fa-font-awesome"></i> Font Awesome</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Features -->
+        <h3 class="section-heading">Key Features</h3>
+        <div class="features-grid">
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-lock feature-icon"></i>
+            <h4>Secure Login</h4>
+            <p>JS-based authentication with form validation and session persistence.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-gauge feature-icon"></i>
+            <h4>Live Dashboard</h4>
+            <p>Real-time stats with animated cards, Chart.js charts, and alerts.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-box feature-icon"></i>
+            <h4>CRUD Products</h4>
+            <p>Full add, edit, delete, search, and filter functionality.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-warehouse feature-icon"></i>
+            <h4>Inventory Control</h4>
+            <p>Stock in/out operations with movement log and low-stock warnings.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-chart-line feature-icon"></i>
+            <h4>Sales Reports</h4>
+            <p>Track revenue, orders, and best-selling products with charts.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-moon feature-icon"></i>
+            <h4>Dark Mode</h4>
+            <p>Complete dark/light theme toggle with smooth transitions.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-floppy-disk feature-icon"></i>
+            <h4>LocalStorage</h4>
+            <p>All data persists across sessions using browser localStorage.</p>
+          </div>
+          <div class="feature-card glass-card">
+            <i class="fa-solid fa-mobile-screen feature-icon"></i>
+            <h4>Responsive</h4>
+            <p>Fully responsive design for desktop, tablet, and mobile.</p>
+          </div>
+        </div>
+
+        <!-- Team -->
+        <h3 class="section-heading">Project Team</h3>
+        <div class="team-grid">
+          <div class="team-card glass-card">
+            <div class="team-avatar">AK</div>
+            <h4>Pulkit Chaurasiya</h4>
+            <p>Frontend Developer</p>
+            <div class="team-social">
+              <a href="https://github.com/Pulkitchaurasiya"><i class="fa-brands fa-github"></i></a>
+              <a href="www.linkedin.com/in/pulkit-chaurasiya-0a66932a1"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+          </div>
+          <div class="team-card glass-card">
+            <div class="team-avatar">PS</div>
+            <h4>Bijnesh Kumar</h4>
+            <p>UI/UX Designer</p>
+            <div class="team-social">
+              <a href="#"><i class="fa-brands fa-github"></i></a>
+              <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+          </div>
+          <div class="team-card glass-card">
+            <div class="team-avatar">RV</div>
+            <h4>Abhay Shukla</h4>
+            <p>JavaScript Engineer</p>
+            <div class="team-social">
+              <a href="#"><i class="fa-brands fa-github"></i></a>
+              <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+          </div>
+          <div class="team-card glass-card">
+            <div class="team-avatar">NP</div>
+            <h4>Pulkit Chaurasiya</h4>
+            <p>Data & Reports</p>
+            <div class="team-social">
+              <a href="#"><i class="fa-brands fa-github"></i></a>
+              <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="about-footer glass-card">
+          <div class="footer-brand">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <span>InvenPro</span>
+          </div>
+          <p>Final Year Project — Computer Science Department — 2024–25</p>
+          <div class="footer-socials">
+            <a href="#"><i class="fa-brands fa-github"></i></a>
+            <a href="#"><i class="fa-brands fa-linkedin"></i></a>
+            <a href="#"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#"><i class="fa-brands fa-instagram"></i></a>
+          </div>
+        </footer>
+      </section>
+
+      <!-- ===== CONTACT ===== -->
+      <section class="app-page" id="page-contact">
+        <div class="page-header">
+          <h1 class="page-title">Contact</h1>
+          <p class="page-sub">Get in touch with the project team</p>
+        </div>
+        <div class="contact-layout">
+          <div class="contact-info glass-card">
+            <h3>Contact Information</h3>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div><strong>Address</strong><p>Department of Computer Science, State University, Varanasi, UP — 221005</p></div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-envelope"></i></div>
+              <div><strong>Email</strong><p>invenpro@project.edu.in</p></div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon"><i class="fa-solid fa-phone"></i></div>
+              <div><strong>Phone</strong><p>+91 9876543210</p></div>
+            </div>
+            <div class="contact-social-links">
+              <a href="#" class="social-btn"><i class="fa-brands fa-github"></i></a>
+              <a href="#" class="social-btn"><i class="fa-brands fa-linkedin"></i></a>
+              <a href="#" class="social-btn"><i class="fa-brands fa-twitter"></i></a>
+            </div>
+          </div>
+          <div class="contact-form-card glass-card">
+            <h3>Send a Message</h3>
+            <form id="contactForm" novalidate>
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Your Name</label>
+                  <input type="text" id="contactName" placeholder="Full name"/>
+                </div>
+                <div class="form-group">
+                  <label>Email</label>
+                  <input type="email" id="contactEmail" placeholder="you@example.com"/>
+                </div>
+                <div class="form-group form-full">
+                  <label>Subject</label>
+                  <input type="text" id="contactSubject" placeholder="How can we help?"/>
+                </div>
+                <div class="form-group form-full">
+                  <label>Message</label>
+                  <textarea id="contactMessage" rows="5" placeholder="Write your message..."></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn-primary"><i class="fa-solid fa-paper-plane"></i> Send Message</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+    </main><!-- /page-area -->
+  </div><!-- /main-content -->
+</div><!-- /app-layout -->
+
+<!-- TOAST CONTAINER -->
+<div id="toastContainer" class="toast-container"></div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal confirm-modal glass-card">
+    <div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    <h3>Confirm Delete</h3>
+    <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+    <div class="modal-footer">
+      <button class="btn-outline" id="cancelDelete">Cancel</button>
+      <button class="btn-danger" id="confirmDelete">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
